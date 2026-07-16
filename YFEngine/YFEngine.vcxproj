@@ -158,8 +158,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="EngineFactory.cpp" />
     <ClCompile Include="Engine\Core\Engine.cpp" />
+    <ClCompile Include="Engine\Core\CommandParameters.cpp" />
     <ClCompile Include="Engine\Platform\Windows\WindowsEngine.cpp" />
+    <ClCompile Include="Engine\Platform\Windows\WindowsMessageProcessing.cpp" />
     <ClCompile Include="Libraries\simple_library\private\simple_channel\simple_io_stream\simple_io_stream.cpp" />
     <ClCompile Include="Libraries\simple_library\private\simple_channel\simple_net_channel\simple_channel.cpp" />
     <ClCompile Include="Libraries\simple_library\private\simple_channel\simple_net_connetion\simple_connetion.cpp" />
@@ -209,9 +212,13 @@
     <ClCompile Include="YFEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="EngineFactory.h" />
     <ClInclude Include="EngineMinimal.h" />
     <ClInclude Include="Engine\Core\Engine.h" />
+    <ClInclude Include="Engine\Core\CommandParameters.h" />
+    <ClInclude Include="Engine\Debug\Log\SimpleLog.h" />
     <ClInclude Include="Engine\Platform\Windows\WindowsEngine.h" />
+    <ClInclude Include="Engine\Platform\Windows\WindowsMessageProcessing.h" />
     <ClInclude Include="Libraries\simple_library\private\simple_channel\simple_net_connetion\simple_connetion_tcp.h" />
     <ClInclude Include="Libraries\simple_library\private\simple_channel\simple_net_connetion\simple_connetion_udp.h" />
     <ClInclude Include="Libraries\simple_library\private\simple_channel\simple_net_drive\simple_net_drive_tcp.h" />
