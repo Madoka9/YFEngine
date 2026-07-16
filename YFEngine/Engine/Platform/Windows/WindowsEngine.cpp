@@ -3,20 +3,26 @@
 #include "WindowsMessageProcessing.h"
 int FWindowsEngine::PreInit(const FWinMainCommandParameters& InParameters)
 {
+    constexpr char LogPath[] = "../log";
+    init_log_system(LogPath);
+    EG_LOG("Engine Pre Initializing...")
     if(!InitWindows(InParameters))
     {
         return -1;
     }
+    EG_LOG("Engine Pre Initializing Complete!")
     return 0;
 }
 
 int FWindowsEngine::Init()
 {
+    EG_LOG("Engine Initializing Complete!")
     return 0;
 }
 
 int FWindowsEngine::PostInit()
 {
+    EG_LOG("Engine post Initializing Complete!")
     return 0;
 }
 
@@ -26,16 +32,19 @@ void FWindowsEngine::Tick()
 
 int FWindowsEngine::PreExit()
 {
+    EG_LOG("Engine Pre Exit Complete!")
     return 0;
 }
 
 int FWindowsEngine::Exit()
 {
+    EG_LOG("Engine Exit Complete!")
     return 0;
 }
 
 int FWindowsEngine::PostExit()
 {
+    EG_LOG("Engine Post Exit Complete!")
     return 0;
 }
 
@@ -53,13 +62,14 @@ bool FWindowsEngine::InitWindows(const FWinMainCommandParameters& InParameters)
     WindowClass.hIcon         = LoadIcon(nullptr, IDI_APPLICATION);
     WindowClass.hIconSm       = LoadIcon(nullptr, IDI_APPLICATION);
     WindowClass.hCursor       = LoadCursor(nullptr, IDC_ARROW);
-    WindowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    WindowClass.hbrBackground = reinterpret_cast<HBRUSH>((COLOR_WINDOW + 1));
     WindowClass.lpszMenuName  = nullptr;
     WindowClass.lpszClassName = L"YFEngineWindowClass";
 
     ATOM RegisterAtom = RegisterClassEx(&WindowClass);
     if(!RegisterAtom)
     {
+        EG_LOG_ERROR("Error: RegisterClassEx FWindowsEngine Failed")
         MessageBox(nullptr, L"RegisterClassEx FWindowsEngine Failed", L"Error", MB_OK);
         return false;
     }
@@ -88,6 +98,7 @@ bool FWindowsEngine::InitWindows(const FWinMainCommandParameters& InParameters)
     );
     if (!hWnd)
     {
+        EG_LOG_ERROR("Error: CreateWindowEx FWindowsEngine Failed")
         MessageBox(nullptr, L"CreateWindowEx FWindowsEngine Failed", L"Error", MB_OK);
         return false;
     }
