@@ -1,0 +1,51 @@
+﻿# --- 构建输出 ---
+bin/
+obj/
+Build/
+
+# --- NuGet ---
+packages/
+*.nupkg
+
+# --- Visual Studio ---
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.dbmdl
+*.ipch
+*.iobj
+*.ipdb
+*.pdb
+*.ilk
+*.res
+*.tlog
+*.lastbuildstate
+*.log
+*.obj
+*.lib
+*.exp
+*.idb
+
+# --- JetBrains Rider / CLion ---
+.idea/
+*.sln.iml
+riderModule.iml
+_ReSharper.Caches/
+
+# --- Windows 系统 ---
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+# --- 其他 ---
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.exe.recipe
+*.pyc
+__pycache__/
