@@ -42,7 +42,7 @@ void Tick(FEngine* InEngine)
 int Exit(FEngine* InEngine)
 {
     int ReturnValue = 0;
-    ReturnValue = InEngine->PostExit();
+    ReturnValue = InEngine->PreExit();
     if(ReturnValue != 0)
     {
         EG_LOG_ERROR("[%d] FEngine::PostExit Failed", ReturnValue)
