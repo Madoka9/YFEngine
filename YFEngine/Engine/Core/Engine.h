@@ -11,7 +11,11 @@ public:
     const FWinMainCommandParameters& InParameters
 #endif
         ) = 0;
-    virtual int Init() = 0;
+    virtual int Init(
+#if defined(_WIN32)
+    const FWinMainCommandParameters& InParameters
+#endif
+    ) = 0;
     virtual int PostInit() = 0;
 
     //============================Engine Render============================

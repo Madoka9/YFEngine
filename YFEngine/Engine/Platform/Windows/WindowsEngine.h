@@ -3,10 +3,11 @@
 #include "../../Core/Engine.h"
 class FWindowsEngine : public FEngine
 {
-    FWindowsEngine();
 public:
+    FWindowsEngine();
+    
     int PreInit(const FWinMainCommandParameters& InParameters) override;
-    int Init() override;
+    int Init(const FWinMainCommandParameters& InParameters) override;
     int PostInit() override;
     void Tick() override;
     int PreExit() override;
@@ -33,11 +34,18 @@ protected:
     ComPtr<ID3D12GraphicsCommandList> D3DCommandList = nullptr;
     
     ComPtr<IDXGISwapChain> SwapChain = nullptr;
-    
+
+    ComPtr<ID3D12DescriptorHeap> RTVDescriptorHeap = nullptr;
+    ComPtr<ID3D12DescriptorHeap> DSVDescriptorHeap = nullptr;
+
+    vector<ComPtr<ID3D12Resource>> SwapChainBuffers;
+    ComPtr<ID3D12Resource> DepthStencilBuffer = nullptr;
 protected:
     HWND MainWindowsHandle = nullptr;
     UINT MSAA4xNumQualityLevels;
+    UINT RTVHeapIncrementSize;
     bool bEnableMSAA4x;
-    DXGI_FORMAT SwapChainBufferFormat;
+    DXGI_FORMAT BackBufferFormat;
+    DXGI_FORMAT DepthStencilFormat;
 };
 #endif

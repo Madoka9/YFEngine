@@ -3,7 +3,7 @@
 
 class FEngineFactory
 {
-    FEngineFactory();
 public:
+    FEngineFactory();
     static FEngine *CreateFEngine();
 };

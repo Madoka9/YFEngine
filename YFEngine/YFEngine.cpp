@@ -5,10 +5,14 @@
 
 int Init(FEngine* InEngine, _In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In_ LPSTR lpCmdLine,_In_ int nCmdShow)
 {
+#if defined(_WIN32)
+    FWinMainCommandParameters WinMainCommandParameters(hInstance,hPrevInstance,lpCmdLine,nCmdShow);
+#elif
+#endif
     int ReturnValue = 0;
     ReturnValue = InEngine->PreInit(
 #if defined(_WIN32)
-FWinMainCommandParameters(hInstance,hPrevInstance,lpCmdLine,nCmdShow)
+    WinMainCommandParameters
 #elif 
 #endif
     );
@@ -18,7 +22,11 @@ FWinMainCommandParameters(hInstance,hPrevInstance,lpCmdLine,nCmdShow)
         return ReturnValue;
     }
         
-    ReturnValue = InEngine->Init();
+    ReturnValue = InEngine->Init(
+#if defined(_WIN32)
+    WinMainCommandParameters
+#endif
+    );
     if(ReturnValue != 0)
     {
         EG_LOG_ERROR("[%d] FEngine::Init Failed", ReturnValue)
@@ -84,12 +92,12 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In
     {
         ReturnValue = Init(Engine,hInstance,hPrevInstance,lpCmdLine,nCmdShow);
         
-        while (true)
+        while (ReturnValue > 0)
         {
             Tick(Engine);
         }
         
-        ReturnValue = Exit(Engine);
+        //ReturnValue = Exit(Engine);
     }
     else
     {

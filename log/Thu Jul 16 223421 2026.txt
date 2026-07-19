@@ -1,4 +1,0 @@
-[LOG] [Thu Jul 16 22:34:21 2026] Engine Pre Initializing... 
-[LOG] [Thu Jul 16 22:34:21 2026] Engine Pre Initializing Complete! 
-[LOG] [Thu Jul 16 22:34:21 2026] Engine Initializing Complete! 
-[LOG] [Thu Jul 16 22:34:21 2026] Engine post Initializing Complete! 
