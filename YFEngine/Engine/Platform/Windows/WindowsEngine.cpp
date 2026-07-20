@@ -6,14 +6,16 @@
 #include "WindowsMessageProcessing.h"
 
 FWindowsEngine::FWindowsEngine()
-    : MSAA4xNumQualityLevels(0), RTVHeapIncrementSize(0), bEnableMSAA4x(false),
-      BackBufferFormat(DXGI_FORMAT_R8G8B8A8_UNORM),DepthStencilFormat(DXGI_FORMAT_D24_UNORM_S8_UINT)
+    : CurrentFenceIndex(0), MSAA4xNumQualityLevels(0), RTVHeapIncrementSize(0), bEnableMSAA4x(false),
+      BackBufferFormat(DXGI_FORMAT_R8G8B8A8_UNORM),DepthStencilFormat(DXGI_FORMAT_D24_UNORM_S8_UINT),
+        CurrentBufferIndex(0)
 
 {
     for (int i = 0; i < FEngineRenderConfig::GetEngineRenderConfig()->SwapChainBufferCount; i++)
     {
         SwapChainBuffers.push_back(ComPtr<ID3D12Resource>());
     }
+    FenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 }
 
 int FWindowsEngine::PreInit(const FWinMainCommandParameters& InParameters)
@@ -40,8 +42,23 @@ int FWindowsEngine::Init(const FWinMainCommandParameters& InParameters)
     return 0;
 }
 
+void FWindowsEngine::InitViewport()
+{
+    ViewportInfo.TopLeftX = 0;
+    ViewportInfo.TopLeftY = 0;
+    ViewportInfo.Width = FEngineRenderConfig::GetEngineRenderConfig()->ScreenWidth;
+    ViewportInfo.Height = FEngineRenderConfig::GetEngineRenderConfig()->ScreenHeight;
+    ViewportInfo.MinDepth = 0.0f;
+    ViewportInfo.MaxDepth = 1.0f;
+    ScissorRect.bottom = ViewportInfo.TopLeftY + ViewportInfo.Height;
+    ScissorRect.right = ViewportInfo.TopLeftX + ViewportInfo.Width;
+    ScissorRect.left = ViewportInfo.TopLeftX;
+    ScissorRect.top = ViewportInfo.TopLeftY;
+}
+
 int FWindowsEngine::PostInit()
 {
+    WaitForGPUCommandQueueComplete();
     for(ComPtr<ID3D12Resource> SwapChainBuffer : SwapChainBuffers)
     {
         SwapChainBuffer.Reset();
@@ -114,12 +131,53 @@ int FWindowsEngine::PostInit()
 
     ID3D12CommandList* CommandLists[] = { D3DCommandList.Get() };
     D3DCommandQueue->ExecuteCommandLists(_countof(CommandLists), CommandLists);
+
+    //Init Viewport
+    InitViewport();
+    WaitForGPUCommandQueueComplete();
     EG_LOG("Engine post Initializing Complete!")
     return 0;
 }
 
-void FWindowsEngine::Tick()
+void FWindowsEngine::Tick(float DeltaTime)
 {
+    D3D12_CPU_DESCRIPTOR_HANDLE CurrentSwapBufferView = GetCurrentSwapBufferView();
+    D3D12_CPU_DESCRIPTOR_HANDLE CurrentDepthStencilBufferView = GetCurrentDepthStencilBufferView();
+    D3DCommandList->Reset(D3DCommandAllocator.Get(), nullptr);
+    D3DCommandAllocator->Reset();
+    {
+        D3D12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentSwapBuffer(),
+           D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+        D3DCommandList->ResourceBarrier(1, &Barrier);
+    }
+    //Viewport info
+    D3DCommandList->RSSetViewports(1, &ViewportInfo);
+    D3DCommandList->RSSetScissorRects(1, &ScissorRect);
+    //清除画布 
+    D3DCommandList->ClearRenderTargetView(CurrentSwapBufferView, DirectX::Colors::Black, 0, nullptr);
+    D3DCommandList->ClearDepthStencilView(CurrentDepthStencilBufferView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+    //"OM" 全称 Output Merger（输出合并器），是 GPU 管线最后一步——把片段着色器的输出合并到帧缓冲里。
+    D3DCommandList->OMSetRenderTargets(1,
+        &CurrentSwapBufferView,
+        true,
+        &CurrentDepthStencilBufferView);
+
+    {
+        D3D12_RESOURCE_BARRIER Barrier = CD3DX12_RESOURCE_BARRIER::Transition(GetCurrentSwapBuffer(),
+           D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+        D3DCommandList->ResourceBarrier(1, &Barrier);
+    }
+
+    ANALYSIS_HRESULT(D3DCommandList->Close());
+    ID3D12CommandList* CommandLists[] = { D3DCommandList.Get() };
+    D3DCommandQueue->ExecuteCommandLists(_countof(CommandLists), CommandLists);
+
+    ANALYSIS_HRESULT(SwapChain->Present(0, 0));
+    CurrentBufferIndex = 1 - CurrentBufferIndex;
+
+    //CPU Wait for GPU
+    WaitForGPUCommandQueueComplete();
 }
 
 int FWindowsEngine::PreExit()
@@ -141,6 +199,21 @@ int FWindowsEngine::PostExit()
     return 0;
 }
 
+
+void FWindowsEngine::WaitForGPUCommandQueueComplete()
+{
+    CurrentFenceIndex++;
+    //告诉GPU干完活之后把这个围栏设到CurrentFenceIndex
+    D3DCommandQueue->Signal(D3DFence.Get(), CurrentFenceIndex);
+    if(D3DFence->GetCompletedValue() < CurrentFenceIndex)
+    {
+        D3DFence->SetEventOnCompletion(CurrentFenceIndex, FenceEvent);
+        //阻塞等待GPU
+        WaitForSingleObject(FenceEvent, INFINITE);
+        ResetEvent(FenceEvent);
+        CloseHandle(FenceEvent);
+    }
+}
 
 bool FWindowsEngine::InitWindows(const FWinMainCommandParameters& InParameters)
 {

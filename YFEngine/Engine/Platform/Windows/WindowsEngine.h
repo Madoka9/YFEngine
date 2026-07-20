@@ -9,16 +9,27 @@ public:
     int PreInit(const FWinMainCommandParameters& InParameters) override;
     int Init(const FWinMainCommandParameters& InParameters) override;
     int PostInit() override;
-    void Tick() override;
+    void Tick(float DeltaTime) override;
     int PreExit() override;
     int Exit() override;
     int PostExit() override;
 
+    ID3D12Resource* GetCurrentSwapBuffer() const {return SwapChainBuffers[CurrentBufferIndex].Get();};
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentSwapBufferView() const
+    {
+        return CD3DX12_CPU_DESCRIPTOR_HANDLE(RTVDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), CurrentBufferIndex, RTVHeapIncrementSize);
+    };
+    D3D12_CPU_DESCRIPTOR_HANDLE GetCurrentDepthStencilBufferView() const {return DSVDescriptorHeap->GetCPUDescriptorHandleForHeapStart();};
+protected:
+    void WaitForGPUCommandQueueComplete();
 private:
     bool InitWindows(const FWinMainCommandParameters& InParameters);
     bool InitDirect3D();
+    void InitViewport();
 
 protected:
+    UINT64 CurrentFenceIndex;
+    int CurrentBufferIndex;
     //显卡适配器工厂
     ComPtr<IDXGIFactory4> DXGIFactory = nullptr;
     //GPU 设备（Device）
@@ -40,6 +51,10 @@ protected:
 
     vector<ComPtr<ID3D12Resource>> SwapChainBuffers;
     ComPtr<ID3D12Resource> DepthStencilBuffer = nullptr;
+
+    //Viewport
+    D3D12_VIEWPORT ViewportInfo;
+    D3D12_RECT ScissorRect;
 protected:
     HWND MainWindowsHandle = nullptr;
     UINT MSAA4xNumQualityLevels;
@@ -47,5 +62,7 @@ protected:
     bool bEnableMSAA4x;
     DXGI_FORMAT BackBufferFormat;
     DXGI_FORMAT DepthStencilFormat;
+
+    HANDLE FenceEvent;
 };
 #endif

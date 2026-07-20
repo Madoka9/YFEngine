@@ -44,7 +44,9 @@ int Init(FEngine* InEngine, _In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevIns
 
 void Tick(FEngine* InEngine)
 {
-    InEngine->Tick(); 
+    float DeltaTime = 0.03f;
+    InEngine->Tick(DeltaTime);
+    Sleep(30);
 }
 
 int Exit(FEngine* InEngine)

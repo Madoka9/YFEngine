@@ -19,7 +19,7 @@ public:
     virtual int PostInit() = 0;
 
     //============================Engine Render============================
-    virtual void Tick() = 0;
+    virtual void Tick(float DeltaTime) = 0;
 
     //============================Engine Exit============================
     virtual int PreExit() = 0;
