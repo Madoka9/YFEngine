@@ -18,6 +18,16 @@ FWindowsEngine::FWindowsEngine()
     FenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 }
 
+
+FWindowsEngine::~FWindowsEngine()
+{
+    if (FenceEvent)
+    {
+        CloseHandle(FenceEvent);
+        FenceEvent = nullptr;
+    }
+}
+
 int FWindowsEngine::PreInit(const FWinMainCommandParameters& InParameters)
 {
     constexpr char LogPath[] = "../log";
@@ -154,7 +164,7 @@ void FWindowsEngine::Tick(float DeltaTime)
     D3DCommandList->RSSetViewports(1, &ViewportInfo);
     D3DCommandList->RSSetScissorRects(1, &ScissorRect);
     //清除画布 
-    D3DCommandList->ClearRenderTargetView(CurrentSwapBufferView, DirectX::Colors::Black, 0, nullptr);
+    D3DCommandList->ClearRenderTargetView(CurrentSwapBufferView, DirectX::Colors::DarkGray, 0, nullptr);
     D3DCommandList->ClearDepthStencilView(CurrentDepthStencilBufferView, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
     //"OM" 全称 Output Merger（输出合并器），是 GPU 管线最后一步——把片段着色器的输出合并到帧缓冲里。
@@ -211,7 +221,6 @@ void FWindowsEngine::WaitForGPUCommandQueueComplete()
         //阻塞等待GPU
         WaitForSingleObject(FenceEvent, INFINITE);
         ResetEvent(FenceEvent);
-        CloseHandle(FenceEvent);
     }
 }
 
@@ -375,3 +384,4 @@ bool FWindowsEngine::InitDirect3D()
     return true;
 }
 #endif 
+

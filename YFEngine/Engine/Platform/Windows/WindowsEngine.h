@@ -5,6 +5,7 @@ class FWindowsEngine : public FEngine
 {
 public:
     FWindowsEngine();
+    ~FWindowsEngine();
     
     int PreInit(const FWinMainCommandParameters& InParameters) override;
     int Init(const FWinMainCommandParameters& InParameters) override;
@@ -63,6 +64,8 @@ protected:
     DXGI_FORMAT BackBufferFormat;
     DXGI_FORMAT DepthStencilFormat;
 
-    HANDLE FenceEvent;
+    HANDLE FenceEvent = nullptr;
 };
 #endif
+
+

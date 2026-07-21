@@ -93,10 +93,20 @@ int WINAPI WinMain(_In_ HINSTANCE hInstance,_In_opt_ HINSTANCE hPrevInstance,_In
     if(FEngine* Engine = FEngineFactory::CreateFEngine())
     {
         ReturnValue = Init(Engine,hInstance,hPrevInstance,lpCmdLine,nCmdShow);
+
+        MSG EngineMSG = {0};
         
-        while (ReturnValue > 0)
+        while (EngineMSG.message != WM_QUIT)
         {
-            Tick(Engine);
+            if (PeekMessage(&EngineMSG, nullptr,0,0,PM_REMOVE))
+            {
+                TranslateMessage(&EngineMSG);
+                DispatchMessage(&EngineMSG);
+            }
+            else
+            {
+                Tick(Engine);
+            }
         }
         
         //ReturnValue = Exit(Engine);

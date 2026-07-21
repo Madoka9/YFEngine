@@ -68,5 +68,6 @@ inline const char* HResultToString(HRESULT hr)
                              __FUNCTION__, __LINE__, \
                              (unsigned int)_hrResult); \
             } \
+            assert(0); \
         } \
     } while(0)
