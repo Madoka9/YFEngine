@@ -49,3 +49,5 @@ ehthumbs.db
 *.exe.recipe
 *.pyc
 __pycache__/
+# 运行时日志输出
+log/
